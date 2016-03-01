@@ -4,7 +4,7 @@
  * Contains \Drupal\panels\Plugin\views\row\NoMarkupGeneratedException.
  */
 
-namespace Drupal\layout_plugin_views\Plugin\views\row;
+namespace Drupal\layout_plugin_views\Exceptions;
 
 /**
  * Exception which can be thrown if a render function did not generate markup.

@@ -11,6 +11,7 @@ use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
+use Drupal\layout_plugin_views\Exceptions\NoMarkupGeneratedException;
 use Drupal\views\ResultRow;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
