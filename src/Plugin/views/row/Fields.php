@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
 use Drupal\layout_plugin_views\Exceptions\NoMarkupGeneratedException;
+use Drupal\layout_plugin_views\FieldsPluginOptions;
 use Drupal\views\ResultRow;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,11 +43,17 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   private $layoutPluginManager;
 
   /**
+   * @var \Drupal\layout_plugin_views\FieldsPluginOptions
+   */
+  private $pluginOptions;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutPluginManagerInterface $layout_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->layoutPluginManager = $layout_plugin_manager;
+    $this->pluginOptions = FieldsPluginOptions::fromFieldsPlugin($this);
   }
 
   /**
@@ -97,7 +104,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
         '#title' => $this->t('Default region'),
         '#description' => $this->t('Defines the region in which the fields will be rendered by default.'),
         '#options' => $layout_definition['region_names'],
-        '#default_value' => $this->getDefaultRegionMachineName(),
+        '#default_value' => $this->pluginOptions->getDefaultRegion(),
       ];
 
       $form['assigned_regions'] = [
@@ -111,20 +118,11 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
           '#type' => 'select',
           '#options' => $layout_definition['region_names'],
           '#title' => $field_label,
-          '#default_value' => $this->getAssignedRegionMachineName($field_name),
+          '#default_value' => $this->pluginOptions->getAssignedRegion($field_name),
           '#empty_option' => $this->t('Default region'),
         ];
       }
     }
-  }
-
-  /**
-   * Retrieves the machine name of the selected layout.
-   *
-   * @return string
-   */
-  protected function getSelectedLayoutMachineName() {
-    return $this->options['layout'];
   }
 
   /**
@@ -133,34 +131,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    * @return array
    */
   protected function getSelectedLayoutDefinition() {
-    return $this->layoutPluginManager->getDefinition($this->getSelectedLayoutMachineName());
-  }
-
-  /**
-   * Retrieves the machine name of the region set to be the default region.
-   *
-   * @return string
-   */
-  protected function getDefaultRegionMachineName() {
-    return $this->options['default_region'];
-  }
-
-  /**
-   * Retrieves the region machine name that was assigned to the given field.
-   *
-   * @param string $field_machine_name
-   *
-   * @return string
-   *  The machine name of the region that the given field is assigned to or an
-   *  empty string if the field is not assigned to a region.
-   */
-  protected function getAssignedRegionMachineName($field_machine_name) {
-    if (isset($this->options['assigned_regions'][$field_machine_name])) {
-      return $this->options['assigned_regions'][$field_machine_name];
-    }
-    else {
-      return '';
-    }
+    return $this->layoutPluginManager->getDefinition($this->pluginOptions->getLayout());
   }
 
   /**
@@ -277,7 +248,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   private function generateRegionMap() {
     $this->regionMap = [];
     foreach ($this->getViewFieldDefinitions() as $field_name => $field_definition) {
-      $region_machine_name = $this->fieldHasValidAssignment($field_name) ? $this->getAssignedRegionMachineName($field_name) : $this->getDefaultRegionMachineName();
+      $region_machine_name = $this->fieldHasValidAssignment($field_name) ? $this->pluginOptions->getAssignedRegion($field_name) : $this->pluginOptions->getDefaultRegion();
       $this->regionMap[$region_machine_name][$field_name] = $field_definition;
     }
   }
@@ -301,7 +272,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    * @return bool
    */
   protected function fieldHasValidAssignment($field_name) {
-    return $this->selectedLayoutHasRegion($this->getAssignedRegionMachineName($field_name));
+    return $this->selectedLayoutHasRegion($this->pluginOptions->getAssignedRegion($field_name));
   }
 
   /**
@@ -328,7 +299,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   protected function buildLayoutRenderArray(array $rendered_regions) {
     if (!empty($rendered_regions)) {
       /** @var \Drupal\layout_plugin\Plugin\Layout\LayoutInterface $layout */
-      $layout = $this->layoutPluginManager->createInstance($this->getSelectedLayoutMachineName(), []);
+      $layout = $this->layoutPluginManager->createInstance($this->pluginOptions->getLayout(), []);
       return $layout->build($rendered_regions);
     }
     return $rendered_regions;
