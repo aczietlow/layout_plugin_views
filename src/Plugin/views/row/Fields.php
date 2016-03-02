@@ -13,6 +13,7 @@ use Drupal\Core\Render\RenderContext;
 use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
 use Drupal\layout_plugin_views\Exceptions\NoMarkupGeneratedException;
 use Drupal\layout_plugin_views\FieldsPluginOptions;
+use Drupal\layout_plugin_views\RegionMap;
 use Drupal\views\ResultRow;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -33,7 +34,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class Fields extends \Drupal\views\Plugin\views\row\Fields {
   /**
-   * @var array
+   * @var \Drupal\layout_plugin_views\RegionMap
    */
   private $regionMap;
 
@@ -129,7 +130,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    */
   public function render($row) {
     /** @var \Drupal\views\ResultRow $row */
-    $build = $this->renderFieldsIntoRegions($row, $this->getRegionMap());
+    $build = $this->renderFieldsIntoRegions($row);
     return $this->buildLayoutRenderArray($build);
   }
 
@@ -137,14 +138,13 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    * Renders the row's fields into the regions specified in the region map.
    *
    * @param \Drupal\views\ResultRow $row
-   * @param array $region_map @see ::getRegionMap
    *
    * @return \Drupal\Component\Render\MarkupInterface[]
    *   An array of MarkupInterface objects keyed by region machine name.
    */
-  protected function renderFieldsIntoRegions(ResultRow $row, array $region_map) {
+  protected function renderFieldsIntoRegions(ResultRow $row) {
     $build = [];
-    foreach ($region_map as $region => $fieldsToRender) {
+    foreach ($this->getRegionMap()->getMap() as $region => $fieldsToRender) {
       if (!empty($fieldsToRender)) {
         try {
           $build[$region]['#markup'] = $this->renderFields($row, $fieldsToRender);
@@ -218,62 +218,14 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   }
 
   /**
-   * Retrieves the region map.
-   *
-   * @return array
-   *  An array with arrays of FieldPluginBase objects keyed by the machine name
-   *  of the region they are assigned to.
+   * @return \Drupal\layout_plugin_views\RegionMap
    */
-  protected function getRegionMap() {
+  private function getRegionMap() {
     if (empty($this->regionMap)) {
-      $this->generateRegionMap();
+      $this->regionMap = new RegionMap($this, $this->pluginOptions);
     }
 
     return $this->regionMap;
-  }
-
-  /**
-   * Generates the region map.
-   */
-  private function generateRegionMap() {
-    $this->regionMap = [];
-    foreach ($this->getViewFieldDefinitions() as $field_name => $field_definition) {
-      $region_machine_name = $this->fieldHasValidAssignment($field_name) ? $this->pluginOptions->getAssignedRegion($field_name) : $this->pluginOptions->getDefaultRegion();
-      $this->regionMap[$region_machine_name][$field_name] = $field_definition;
-    }
-  }
-
-  /**
-   * Gets the machine names of all regions in the selected layout.
-   *
-   * @return string[]
-   */
-  protected function getRegionNamesForSelectedLayout() {
-    $definition = $this->pluginOptions->getSelectedLayoutDefinition();
-    $available_regions = array_keys($definition['region_names']);
-    return $available_regions;
-  }
-
-  /**
-   * Determines if the given field is assigned to an existing region.
-   *
-   * @param string $field_name
-   *
-   * @return bool
-   */
-  protected function fieldHasValidAssignment($field_name) {
-    return $this->selectedLayoutHasRegion($this->pluginOptions->getAssignedRegion($field_name));
-  }
-
-  /**
-   * Determines if the given machine name is a region in the selected layout.
-   *
-   * @param string $region_name
-   *
-   * @return bool
-   */
-  protected function selectedLayoutHasRegion($region_name) {
-    return in_array($region_name, $this->getRegionNamesForSelectedLayout());
   }
 
   /**
