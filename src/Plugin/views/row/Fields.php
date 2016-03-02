@@ -53,7 +53,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   public function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutPluginManagerInterface $layout_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->layoutPluginManager = $layout_plugin_manager;
-    $this->pluginOptions = FieldsPluginOptions::fromFieldsPlugin($this);
+    $this->pluginOptions = FieldsPluginOptions::fromFieldsPlugin($layout_plugin_manager, $this);
   }
 
   /**
@@ -83,12 +83,11 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-    try {
-      $layout_definition = $this->getSelectedLayoutDefinition();
+    if ($this->pluginOptions->hasValidSelectedLayout()) {
+      $layout_definition = $this->pluginOptions->getSelectedLayoutDefinition();
     }
-    catch (\Exception $e) {
-      $definitions = $this->layoutPluginManager->getDefinitions();
-      $layout_definition = array_shift($definitions);
+    elseif ($this->pluginOptions->layoutFallbackIsPossible()) {
+      $layout_definition = $this->pluginOptions->getFallbackLayoutDefinition();
     }
 
     if (!empty($layout_definition)) {
@@ -123,15 +122,6 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
         ];
       }
     }
-  }
-
-  /**
-   * Retrieves the definition of the selected layout.
-   *
-   * @return array
-   */
-  protected function getSelectedLayoutDefinition() {
-    return $this->layoutPluginManager->getDefinition($this->pluginOptions->getLayout());
   }
 
   /**
@@ -259,7 +249,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    * @return string[]
    */
   protected function getRegionNamesForSelectedLayout() {
-    $definition = $this->getSelectedLayoutDefinition();
+    $definition = $this->pluginOptions->getSelectedLayoutDefinition();
     $available_regions = array_keys($definition['region_names']);
     return $available_regions;
   }

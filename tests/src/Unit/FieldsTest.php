@@ -312,6 +312,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
     $mock->method('getDefinition')
       ->willReturn($this->createLayoutDefinition());
     $mock->method('getDefinitions')->willReturn(['something that is not empty']);
+    $mock->method('hasDefinition')->willReturn(TRUE);
 
     return $mock;
   }

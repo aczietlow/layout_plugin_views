@@ -3,6 +3,7 @@
 namespace Drupal\layout_plugin_views;
 
 
+use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
 use Drupal\layout_plugin_views\Plugin\views\row\Fields;
 
 class FieldsPluginOptions {
@@ -11,13 +12,18 @@ class FieldsPluginOptions {
    * @var \Drupal\layout_plugin_views\Plugin\views\row\Fields
    */
   private $plugin;
+  /**
+   * @var \Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface
+   */
+  private $layoutPluginManager;
 
-  public static function fromFieldsPlugin(Fields $plugin) {
-    return new static($plugin);
+  public static function fromFieldsPlugin(LayoutPluginManagerInterface $layoutPluginManager, Fields $plugin) {
+    return new static($layoutPluginManager, $plugin);
   }
 
-  private function __construct(Fields $plugin) {
+  private function __construct(LayoutPluginManagerInterface $layoutPluginManager, Fields $plugin) {
     $this->plugin = $plugin;
+    $this->layoutPluginManager = $layoutPluginManager;
   }
 
   /**
@@ -54,5 +60,36 @@ class FieldsPluginOptions {
     else {
       return '';
     }
+  }
+
+  /**
+   * @return bool
+   */
+  public function hasValidSelectedLayout() {
+    return $this->layoutPluginManager->hasDefinition($this->getLayout());
+  }
+
+  /**
+   * Retrieves the definition of the selected layout.
+   *
+   * @return array
+   */
+  public function getSelectedLayoutDefinition() {
+    return $this->hasValidSelectedLayout() ? $this->layoutPluginManager->getDefinition($this->getLayout()) : [];
+  }
+
+  /**
+   * @return bool
+   */
+  public function layoutFallbackIsPossible() {
+    return count($this->layoutPluginManager->getDefinitions()) > 0;
+  }
+
+  /**
+   * @return array
+   */
+  public function getFallbackLayoutDefinition() {
+    $definitions = $this->layoutPluginManager->getDefinitions();
+    return array_shift($definitions);
   }
 }
