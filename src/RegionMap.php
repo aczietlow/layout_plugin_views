@@ -2,7 +2,6 @@
 
 namespace Drupal\layout_plugin_views;
 
-
 use Drupal\layout_plugin_views\Plugin\views\row\Fields;
 
 class RegionMap {
@@ -11,18 +10,16 @@ class RegionMap {
    * @var \Drupal\layout_plugin_views\Plugin\views\row\Fields
    */
   private $plugin;
+
+  /**
+   * @var array
+   */
   private $map;
+
   /**
    * @var \Drupal\layout_plugin_views\FieldsPluginOptions
    */
   private $pluginOptions;
-
-  /**
-   * @return mixed
-   */
-  public function getMap() {
-    return $this->map;
-  }
 
   public function __construct(Fields $plugin, FieldsPluginOptions $plugin_options) {
     $this->plugin = $plugin;
@@ -72,5 +69,34 @@ class RegionMap {
     $definition = $this->pluginOptions->getSelectedLayoutDefinition();
     $available_regions = array_keys($definition['region_names']);
     return $available_regions;
+  }
+
+  /**
+   * Retrieves an array of region machine names for all regions that contain
+   * fields to be rendered.
+   *
+   * @return array
+   */
+  public function getNonEmptyRegionNames() {
+    $non_empty = [];
+
+    foreach ($this->map as $region => $fields) {
+      if (!empty($fields)) {
+        $non_empty[] = $region;
+      }
+    }
+
+    return $non_empty;
+  }
+
+  /**
+   * Returns the fields to be rendered for the given region.
+   *
+   * @param string $region_name
+   *
+   * @return \Drupal\views\Plugin\views\field\FieldPluginBase[]
+   */
+  public function getFieldsForRegion($region_name) {
+    return !empty($this->map[$region_name]) ? $this->map[$region_name] : [];
   }
 }

@@ -144,14 +144,14 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    */
   protected function renderFieldsIntoRegions(ResultRow $row) {
     $build = [];
-    foreach ($this->getRegionMap()->getMap() as $region => $fieldsToRender) {
-      if (!empty($fieldsToRender)) {
-        try {
-          $build[$region]['#markup'] = $this->renderFields($row, $fieldsToRender);
-        }
-        catch (NoMarkupGeneratedException $e) {
-          // We don't want to render empty regions, so we do nothing.
-        }
+    foreach ($this->getRegionMap()->getNonEmptyRegionNames() as $region_name) {
+      try {
+        $build[$region_name]['#markup'] = $this->renderFields($row, $this->getRegionMap()->getFieldsForRegion($region_name));
+      }
+      catch (NoMarkupGeneratedException $e) {
+        // Even though we only try to render regions that actually contain
+        // fields, it is still possible that those fields are empty. We don't
+        // want to render empty regions, so we do nothing.
       }
     }
 
