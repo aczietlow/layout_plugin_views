@@ -249,6 +249,8 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
    * Callback for the get method of the mocked container. Creates and returns a
    * mock for every relevant service.
    *
+   * @param string $argument
+   *
    * @return \PHPUnit_Framework_MockObject_MockObject
    */
   public function containerGetCallback($argument) {
@@ -275,7 +277,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
     }
   }
 
-  public function rendererCallback($context, $callable) {
+  public function rendererCallback() {
     foreach ($this->sut->view->field as $field) {
       if (empty($field->options['exclude'])) {
         return 'render result';
@@ -332,6 +334,14 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * returns a static mocked view.
+   *
+   * @param bool $reset
+   *   Set this to true if the view should be reset.
+   *
+   * @param bool $add_fields
+   *   Set this to false if no fields should be added.
+   *
    * @return \PHPUnit_Framework_MockObject_MockObject
    */
   protected function getMockedView($reset = FALSE, $add_fields = TRUE) {
@@ -379,6 +389,8 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
   /**
    * @param $field_name
    * @param $view
+   * @param bool $exclude
+   *  Set this to true if the field should have its exclude option set.
    */
   protected function addFieldToMockedView($field_name, $view, $exclude = FALSE) {
     $field = $this->getMockBuilder(Field::class)
