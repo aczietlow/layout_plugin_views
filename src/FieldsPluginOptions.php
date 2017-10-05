@@ -12,6 +12,7 @@ class FieldsPluginOptions {
    * @var \Drupal\layout_plugin_views\Plugin\views\row\Fields
    */
   private $plugin;
+
   /**
    * @var \Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface
    */

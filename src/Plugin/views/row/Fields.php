@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\panels\Plugin\views\row\Fields.
- */
-
 namespace Drupal\layout_plugin_views\Plugin\views\row;
 
 use Drupal\Component\Render\MarkupInterface;
@@ -33,6 +28,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class Fields extends \Drupal\views\Plugin\views\row\Fields {
+
   /**
    * @var \Drupal\layout_plugin_views\RegionMap
    */
@@ -146,9 +142,9 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
     $build = [];
     foreach ($this->getRegionMap()->getNonEmptyRegionNames() as $region_name) {
       try {
-        $build[$region_name]['#markup'] = $this->renderFields($row, $this->getRegionMap()->getFieldsForRegion($region_name));
-      }
-      catch (NoMarkupGeneratedException $e) {
+        $fieldsToRender = $this->getRegionMap()->getFieldsForRegion($region_name);
+        $build[$region_name]['#markup'] = $this->renderFields($row, $fieldsToRender);
+      } catch (NoMarkupGeneratedException $e) {
         // Even though we only try to render regions that actually contain
         // fields, it is still possible that those fields are empty. We don't
         // want to render empty regions, so we do nothing.

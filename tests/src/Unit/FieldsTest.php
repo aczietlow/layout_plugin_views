@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\Tests\layout_plugin_views\Unit\FieldsTest.
- */
 
 namespace Drupal\Tests\layout_plugin_views\Unit;
 
@@ -24,6 +20,7 @@ use Symfony\Component\DependencyInjection\IntrospectableContainerInterface;
  * @group Panels
  */
 class FieldsTest extends \PHPUnit_Framework_TestCase {
+
   /** @var \PHPUnit_Framework_MockObject_MockObject */
   private $container;
 
@@ -34,7 +31,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
     $this->container = $this->getMockForAbstractClass(IntrospectableContainerInterface::class);
     $this->container->method('get')->willReturnCallback([
       $this,
-      'containerGetCallback'
+      'containerGetCallback',
     ]);
     \Drupal::setContainer($this->container);
 
@@ -109,7 +106,8 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @test
-   * @todo default value is temporarily an empty string. Make this something sensible.
+   * @todo default value is temporarily an empty string. Make this something
+   *   sensible.
    */
   public function assertDefaultRegionSelectionDefaultValue() {
     $form = $this->buildOptionsFrom();
@@ -169,7 +167,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
     $expected = [
       '' => [
         '#markup' => 'render result',
-      ]
+      ],
     ];
 
     $this->assertEquals($expected, $this->sut->render(new ResultRow([])));
@@ -268,7 +266,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
         $mock = $this->getMockForAbstractClass(RendererInterface::class);
         $mock->method('executeInRenderContext')->willReturnCallback([
           $this,
-          'rendererCallback'
+          'rendererCallback',
         ]);
         return $mock;
 
@@ -313,7 +311,8 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
     $mock->method('createInstance')->willReturn($layoutMock);
     $mock->method('getDefinition')
       ->willReturn($this->createLayoutDefinition());
-    $mock->method('getDefinitions')->willReturn(['something that is not empty']);
+    $mock->method('getDefinitions')
+      ->willReturn(['something that is not empty']);
     $mock->method('hasDefinition')->willReturn(TRUE);
 
     return $mock;
@@ -382,7 +381,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
   protected function fieldLabels() {
     return [
       'somefield' => 'Some field',
-      'some_other_field' => 'Some other field'
+      'some_other_field' => 'Some other field',
     ];
   }
 
