@@ -5,7 +5,7 @@ namespace Drupal\layout_plugin_views\Plugin\views\row;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RenderContext;
-use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
+use Drupal\Core\Layout\LayoutPluginManagerInterface;
 use Drupal\layout_plugin_views\Exceptions\NoMarkupGeneratedException;
 use Drupal\layout_plugin_views\FieldsPluginOptions;
 use Drupal\layout_plugin_views\RegionMap;
@@ -35,7 +35,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   private $regionMap;
 
   /**
-   * @var \Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface
+   * @var \Drupal\Core\Layout\LayoutPluginManagerInterface
    */
   private $layoutPluginManager;
 
@@ -57,7 +57,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.layout_plugin'));
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.core.layout'));
   }
 
   /**
@@ -80,6 +80,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
+    /** @var \Drupal\Core\Layout\LayoutDefinition $layout_definition */
     if ($this->pluginOptions->hasValidSelectedLayout()) {
       $layout_definition = $this->pluginOptions->getSelectedLayoutDefinition();
     }
@@ -91,15 +92,16 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
       $form['layout'] = [
         '#type' => 'select',
         '#title' => $this->t('Panel layout'),
-        '#options' => $this->layoutPluginManager->getLayoutOptions(['group_by_category' => TRUE]),
-        '#default_value' => $layout_definition['id'],
+        '#options' => $this->layoutPluginManager->getLayoutOptions(),
+        '#default_value' => $layout_definition->id(),
       ];
 
+      $labels = $layout_definition->getRegionLabels();
       $form['default_region'] = [
         '#type' => 'select',
         '#title' => $this->t('Default region'),
         '#description' => $this->t('Defines the region in which the fields will be rendered by default.'),
-        '#options' => $layout_definition['region_names'],
+        '#options' => $labels,
         '#default_value' => $this->pluginOptions->getDefaultRegion(),
       ];
 
@@ -112,7 +114,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
       foreach ($this->displayHandler->getFieldLabels() as $field_name => $field_label) {
         $form['assigned_regions'][$field_name] = [
           '#type' => 'select',
-          '#options' => $layout_definition['region_names'],
+          '#options' => $labels,
           '#title' => $field_label,
           '#default_value' => $this->pluginOptions->getAssignedRegion($field_name),
           '#empty_option' => $this->t('Default region'),
@@ -236,7 +238,7 @@ class Fields extends \Drupal\views\Plugin\views\row\Fields {
    */
   protected function buildLayoutRenderArray(array $rendered_regions) {
     if (!empty($rendered_regions)) {
-      /** @var \Drupal\layout_plugin\Plugin\Layout\LayoutInterface $layout */
+      /** @var \Drupal\Core\Layout\LayoutInterface $layout */
       $layout = $this->layoutPluginManager->createInstance($this->pluginOptions->getLayout(), []);
       return $layout->build($rendered_regions);
     }

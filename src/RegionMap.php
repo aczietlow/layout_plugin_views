@@ -66,9 +66,9 @@ class RegionMap {
    * @return string[]
    */
   private function getRegionNamesForSelectedLayout() {
+    /** @var \Drupal\Core\Layout\LayoutDefinition $definition */
     $definition = $this->pluginOptions->getSelectedLayoutDefinition();
-    $available_regions = array_keys($definition['region_names']);
-    return $available_regions;
+    return $definition->getRegionNames();
   }
 
   /**

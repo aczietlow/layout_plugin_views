@@ -3,7 +3,7 @@
 namespace Drupal\layout_plugin_views;
 
 
-use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface;
+use Drupal\Core\Layout\LayoutPluginManagerInterface;
 use Drupal\layout_plugin_views\Plugin\views\row\Fields;
 
 class FieldsPluginOptions {
@@ -14,7 +14,7 @@ class FieldsPluginOptions {
   private $plugin;
 
   /**
-   * @var \Drupal\layout_plugin\Plugin\Layout\LayoutPluginManagerInterface
+   * @var \Drupal\Core\Layout\LayoutPluginManagerInterface
    */
   private $layoutPluginManager;
 

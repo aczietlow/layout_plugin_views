@@ -3,23 +3,25 @@
 namespace Drupal\Tests\layout_plugin_views\Unit;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Layout\LayoutDefinition;
+use Drupal\Core\Layout\LayoutInterface;
+use Drupal\Core\Layout\LayoutPluginManager;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\StringTranslation\TranslationManager;
-use Drupal\layout_plugin\Plugin\Layout\LayoutInterface;
-use Drupal\layout_plugin\Plugin\Layout\LayoutPluginManager;
 use Drupal\layout_plugin_views\Plugin\views\row\Fields;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\views\Plugin\views\field\Field;
+use Drupal\views\Plugin\views\field\EntityField;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
-use Symfony\Component\DependencyInjection\IntrospectableContainerInterface;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @coversDefaultClass \Drupal\layout_plugin_views\Plugin\views\row\Fields
  * @group Panels
  */
-class FieldsTest extends \PHPUnit_Framework_TestCase {
+class FieldsTest extends TestCase {
 
   /** @var \PHPUnit_Framework_MockObject_MockObject */
   private $container;
@@ -28,7 +30,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
   protected $sut;
 
   protected function setUp() {
-    $this->container = $this->getMockForAbstractClass(IntrospectableContainerInterface::class);
+    $this->container = $this->getMockForAbstractClass(ContainerInterface::class);
     $this->container->method('get')->willReturnCallback([
       $this,
       'containerGetCallback',
@@ -253,7 +255,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
    */
   public function containerGetCallback($argument) {
     switch ($argument) {
-      case 'plugin.manager.layout_plugin':
+      case 'plugin.manager.core.layout':
         return $this->createLayoutPluginManagerMock();
 
       case 'string_translation':
@@ -319,17 +321,17 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @return array
+   * @return \Drupal\Core\Layout\LayoutDefinition
    */
   protected function createLayoutDefinition() {
-    return [
-      'region_names' => [
-        'left' => 'Left',
-        'middle' => 'Middle',
-        'right' => 'Right',
+    return new LayoutDefinition([
+      'regions' => [
+        'left' => ['label' => 'Left'],
+        'middle' => ['label' => 'Middle'],
+        'right' => ['label' => 'Right'],
       ],
       'id' => 'onecol',
-    ];
+    ]);
   }
 
   /**
@@ -392,7 +394,7 @@ class FieldsTest extends \PHPUnit_Framework_TestCase {
    *  Set this to true if the field should have its exclude option set.
    */
   protected function addFieldToMockedView($field_name, $view, $exclude = FALSE) {
-    $field = $this->getMockBuilder(Field::class)
+    $field = $this->getMockBuilder(EntityField::class)
       ->disableOriginalConstructor()
       ->getMock();
     $field->method('getItems')
