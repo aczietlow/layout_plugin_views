@@ -1,0 +1,20 @@
+{
+  "name": "aczietlow/layout_plugin_views",
+  "type": "drupal-module",
+  "authors": [
+    {
+      "name": "Chris Zietlow",
+      "email": "czietlow@mindgrub.com",
+      "homepage": "https://github.com/rvtraveller"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
+    }
+  ],
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+}
+
