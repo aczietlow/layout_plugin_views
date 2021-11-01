@@ -2,6 +2,7 @@ name: Layout Plugin Views
 description: 'Allows users to display Views fields in the regions of pluggable layouts provided by the Layout Discovery module.'
 type: module
 core: 8.x
+core_version_requirement: ^8 || ^9
 dependencies:
   - drupal:layout_discovery
   - drupal:views
